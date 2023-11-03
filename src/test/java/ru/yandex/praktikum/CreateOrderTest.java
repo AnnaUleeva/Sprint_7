@@ -1,5 +1,8 @@
 package ru.yandex.praktikum;
 
+import io.qameta.allure.Description;
+import io.qameta.allure.Step;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,42 +15,69 @@ import ru.yandex.praktikum.scooter_test.model.CreateOrderRequest;
 import ru.yandex.praktikum.scooter_test.model.CreateOrderResponse;
 
 import static org.apache.http.HttpStatus.SC_CREATED;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 @RunWith(Parameterized.class)
 public class CreateOrderTest {
-    OrderApiClient orderApiClient;
-    CreateOrderRequest createOrderRequest;
+    private OrderApiClient orderApiClient;
+    private final CreateOrderRequest createOrderRequest;
 
     @Before
     public void setUp() {
+
         orderApiClient = new OrderApiClient();
     }
 
     public CreateOrderTest(CreateOrderRequest createOrderRequest) {
+
         this.createOrderRequest = createOrderRequest;
     }
 
     @Parameterized.Parameters
     public static Object[][] getTestData() {
-        String[] oneColor = {OrderColors.BLACK};
-        String[] twoColor = {OrderColors.BLACK, OrderColors.GREY};
-        String[] withoutColor = {};
+        OrderColors[] blackColor = {OrderColors.BLACK};
+        OrderColors[] greyColor = {OrderColors.GREY};
+        OrderColors[] twoColor = {OrderColors.BLACK, OrderColors.GREY};
+        OrderColors[] withoutColor = {};
+
 
         return new Object[][]{
-                {OrderGenerator.getRandomOrder(oneColor)},
+                {OrderGenerator.getRandomOrder(blackColor)},
+                {OrderGenerator.getRandomOrder(greyColor)},
                 {OrderGenerator.getRandomOrder(twoColor)},
                 {OrderGenerator.getRandomOrder(withoutColor)},
         };
     }
 
     @Test
-    public void CreateOrder() {
-        Response createResponse = orderApiClient.create(createOrderRequest);
+    @DisplayName("Create order")
+    @Description("Создание заказа")
+    public void createOrder() {
+        Response createResponse = createNewOrder(createOrderRequest);
+        checkStatusCodeCreateOrder(createResponse);
+        CreateOrderResponse createOrderResponse = getCreateOrderResponse(createResponse);
+        checkTrackOutput(createOrderResponse);
+    }
+
+    @Step("Создание заказа")
+    public Response createNewOrder(CreateOrderRequest createOrderRequest) {
+        return orderApiClient.create(createOrderRequest);
+    }
+
+    @Step("Проверка выхода статус кода на создание заказа")
+    public void checkStatusCodeCreateOrder(Response createResponse) {
         assertEquals(SC_CREATED, createResponse.statusCode());
-        CreateOrderResponse createOrderResponse = createResponse.as(CreateOrderResponse.class);
-        assertNotNull(createOrderResponse.track);
+    }
+
+    @Step("Преобразование ответа к модели CreateOrderResponse")
+    public CreateOrderResponse getCreateOrderResponse(Response createResponse) {
+        return createResponse.as(CreateOrderResponse.class);
+    }
+
+    @Step("Проверка выхода track")
+    public void checkTrackOutput(CreateOrderResponse createOrderResponse) {
+        assertNotNull(createOrderResponse.getTrack());
     }
 }
+

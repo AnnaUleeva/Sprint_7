@@ -5,26 +5,26 @@ import io.restassured.response.Response;
 import ru.yandex.praktikum.scooter_test.model.CreateCourierRequest;
 import ru.yandex.praktikum.scooter_test.model.LoginCourierRequest;
 
-import static ru.yandex.praktikum.scooter_test.config.ConfigApp.BASE_URL;
-
 public class CourierApiClient extends BaseApiClient {
+    final static String API_CLIENT = "/api/v1/courier";
+
     public Response createCourier(CreateCourierRequest createCourierRequest) {
         return getPostSpec()
                 .body(createCourierRequest)
                 .when()
-                .post(BASE_URL + "/api/v1/courier");
+                .post(API_CLIENT);
     }
 
     public Response loginCourier(LoginCourierRequest loginCourierRequest) {
         return getPostSpec()
                 .body(loginCourierRequest)
                 .when()
-                .post(BASE_URL + "/api/v1/courier/login");
+                .post(API_CLIENT + "/login");
     }
 
     public Response deleteCourier(Integer id) {
         return getPostSpec()
                 .when()
-                .delete(BASE_URL + "/api/v1/courier/" + id);
+                .delete(API_CLIENT + "/" + id);
     }
 }

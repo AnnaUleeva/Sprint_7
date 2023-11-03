@@ -1,9 +1,13 @@
 package ru.yandex.praktikum.scooter_test.model;
 
 public class CreateOrderResponse {
-    public String track;
+    private final String track;
 
-    public CreateOrderResponse(String track){
+    public CreateOrderResponse(String track) {
         this.track = track;
+    }
+
+    public String getTrack() {
+        return track;
     }
 }

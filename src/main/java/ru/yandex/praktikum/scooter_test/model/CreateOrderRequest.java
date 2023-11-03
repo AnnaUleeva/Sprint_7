@@ -1,19 +1,21 @@
 package ru.yandex.praktikum.scooter_test.model;
 
+import ru.yandex.praktikum.scooter_test.constants.OrderColors;
+
 import java.util.Date;
 
 public class CreateOrderRequest {
-    public String firstName;
-    public String lastName;
-    public String address;
-    public String metroStation;
-    public String phone;
-    public Integer rentTime;
-    public Date deliveryDate;
-    public String comment;
-    public String[] color;
+    String firstName;
+    String lastName;
+    String address;
+    String metroStation;
+    String phone;
+    Integer rentTime;
+    Date deliveryDate;
+    String comment;
+    OrderColors[] color;
 
-    public CreateOrderRequest(String firstName, String lastName, String address, String metroStation, String phone, Integer rentTime, Date deliveryDate, String comment, String[] color) {
+    public CreateOrderRequest(String firstName, String lastName, String address, String metroStation, String phone, Integer rentTime, Date deliveryDate, String comment, OrderColors[] color) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;

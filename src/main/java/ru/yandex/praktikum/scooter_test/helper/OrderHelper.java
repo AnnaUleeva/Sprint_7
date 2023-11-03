@@ -8,6 +8,7 @@ import static org.apache.http.HttpStatus.SC_CREATED;
 
 public class OrderHelper {
     static OrderApiClient orderApiClient = new OrderApiClient();
+
     public static CreateOrderResponse create(CreateOrderRequest createOrderRequest) {
         return orderApiClient.create(createOrderRequest).then().statusCode(SC_CREATED).and().extract().as(CreateOrderResponse.class);
     }

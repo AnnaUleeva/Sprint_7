@@ -10,7 +10,7 @@ public class OrderApiClient extends BaseApiClient {
         return getPostSpec()
                 .body(createOrderRequest)
                 .when()
-                .post(BASE_URL + "/api/v1/orders");
+                .post( "/api/v1/orders");
     }
 
     public Response getOrders(){

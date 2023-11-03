@@ -1,16 +1,24 @@
 package ru.yandex.praktikum.scooter_test.model;
 
 public class CreateCourierRequest {
-    public String login;
-    public String password;
-    public String firstName;
+    private String login;
+    private String password;
+    String firstName;
 
-    public CreateCourierRequest(String login, String password, String firstName){
+    public CreateCourierRequest(String login, String password, String firstName) {
         this.login = login;
         this.password = password;
         this.firstName = firstName;
     }
-    public CreateCourierRequest(){
 
+    public CreateCourierRequest() {
+    }
+
+    public String getLogin() {
+        return login;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }

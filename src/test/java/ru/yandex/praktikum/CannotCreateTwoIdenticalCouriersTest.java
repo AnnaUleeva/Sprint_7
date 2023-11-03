@@ -1,6 +1,10 @@
 package ru.yandex.praktikum;
 
+import io.qameta.allure.Description;
+import io.qameta.allure.Step;
+import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.Response;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import ru.yandex.praktikum.scooter_test.client.CourierApiClient;
@@ -16,30 +20,90 @@ import static org.apache.http.HttpStatus.SC_CREATED;
 import static org.junit.Assert.*;
 
 public class CannotCreateTwoIdenticalCouriersTest {
-    CreateCourierRequest createCourierRequest;
-    LoginCourierRequest loginCourierRequest;
-    CourierApiClient courierApiClient;
+    private CreateCourierRequest createCourierRequest;
+    private LoginCourierRequest loginCourierRequest;
+    private CourierApiClient courierApiClient;
+    private Integer courierId;
 
     @Before
     public void setUp() {
         createCourierRequest = CourierGenerator.getRandomCourier();
-        loginCourierRequest = new LoginCourierRequest(createCourierRequest.login, createCourierRequest.password);
+        loginCourierRequest = new LoginCourierRequest(createCourierRequest.getLogin(), createCourierRequest.getPassword());
         courierApiClient = new CourierApiClient();
     }
+
     @Test
-    public void CannotCreateTwoIdenticalCouriers(){
-        Response createResponseOne = courierApiClient.createCourier(createCourierRequest);
-        assertEquals(SC_CREATED, createResponseOne.statusCode());
-        CreateCourierResponse createCourierResponseOne = createResponseOne.as(CreateCourierResponse.class);
-        assertTrue(createCourierResponseOne.ok);
+    @DisplayName("Cannot crete two identical couriers")
+    @Description("Создание двух курьеров с одинаковыми данными")
+    public void cannotCreateTwoIdenticalCouriers() {
+        Response createResponseOne = createFirstCourier();
+        checkCreateCourierStatusCode(createResponseOne);
+        CreateCourierResponse createCourierResponseOne = getCreateCourierResponse(createResponseOne);
+        checkMessageCreateCourier(createCourierResponseOne);
 
-        LoginCourierResponse loginCourierResponse = CourierHelper.login(loginCourierRequest);
-        assertNotNull(loginCourierResponse.id);
+        LoginCourierResponse loginCourierResponse = loginCourier();
+        courierId = loginCourierResponse.getId();
+        checkingCourierAuthorization(loginCourierResponse);
 
-        Response createResponseTwo = courierApiClient.createCourier(createCourierRequest);
-        assertEquals(SC_CONFLICT, createResponseTwo.statusCode());
-        CreateCourierResponse createCourierResponseTwo = createResponseTwo.as(CreateCourierResponse.class);
-        assertEquals("Этот логин уже используется. Попробуйте другой.", createCourierResponseTwo.message);
+
+        Response createResponseTwo = createSecondCourier();
+        checkCreateSecondCourierStatusCode(createResponseTwo);
+        CreateCourierResponse createCourierResponseTwo = getCreateSecondCourierResponse(createResponseTwo);
+        checkMessageCreateSecondCourier(createCourierResponseTwo);
     }
 
+    @Step("Создание нового курьера")
+    public Response createFirstCourier() {
+        return courierApiClient.createCourier(createCourierRequest);
+    }
+
+    @Step("Метод для шага проверка кода при создании курьера")
+    public void checkCreateCourierStatusCode(Response response) {
+        assertEquals(SC_CREATED, response.statusCode());
+    }
+
+    @Step("Преобразование ответа к модели CreateCourierResponse")
+    public CreateCourierResponse getCreateCourierResponse(Response response) {
+        return response.as(CreateCourierResponse.class);
+    }
+
+    @Step("Проверка сообщения о создании первого курьера")
+    public void checkMessageCreateCourier(CreateCourierResponse response) {
+        assertTrue(response.getOk());
+    }
+
+    @Step("Авторизация курьера")
+    public LoginCourierResponse loginCourier() {
+        return CourierHelper.login(loginCourierRequest);
+    }
+
+    @Step("Проверка отображения Id вторизованного курьера")
+    public void checkingCourierAuthorization(LoginCourierResponse loginCourierResponse) {
+        assertNotNull(loginCourierResponse.getId());
+    }
+
+    @Step("Создание курьера с данными первого курьера")
+    public Response createSecondCourier() {
+        return courierApiClient.createCourier(createCourierRequest);
+    }
+
+    @Step("Проверка статуса ошибки о создании второго курьера с данными ранее созданного курьера")
+    public void checkCreateSecondCourierStatusCode(Response createResponseTwo) {
+        assertEquals(SC_CONFLICT, createResponseTwo.statusCode());
+    }
+
+    @Step("Преобразование ответа к модели CreateCourierResponse")
+    public CreateCourierResponse getCreateSecondCourierResponse(Response createResponseTwo) {
+        return createResponseTwo.as(CreateCourierResponse.class);
+    }
+
+    @Step("Проверка сообщения о создании второго курьера с данными ранее созданного курьера")
+    public void checkMessageCreateSecondCourier(CreateCourierResponse createCourierResponseTwo) {
+        assertEquals("Этот логин уже используется. Попробуйте другой.", createCourierResponseTwo.getMessage());
+    }
+
+    @After
+    public void reset() {
+        CourierHelper.delete(courierId);
+    }
 }
